@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from . import forms
 
@@ -43,5 +43,12 @@ def home(request):
 
 @login_required
 def search_view(request):
-    print(request.path)
-    return render(request, "pages/search.html")
+    users = []
+    search_username = request.GET.get("username")
+    if search_username:
+        users = (
+            get_user_model()
+            .objects.filter(username__icontains=search_username)
+            .exclude(id=request.user.id)
+        )
+    return render(request, "pages/search.html", {"users": users})
