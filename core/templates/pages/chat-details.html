@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block main %}
+<div class="dock absolute gap-2 px-4 justify-start top-0 shadow-xs dock-lg">
+    <div class="max-w-[20px]">
+        <a href="{% url 'home' %}" class="cursor-pointer">
+            <i class="fa-solid fa-chevron-left"></i>
+        </a>
+    </div>
+    <div class="max-w-full w-full flex flex-row justify-start items-center gap-3">
+        <div class="avatar">
+            <div class="w-10 h-10 rounded-full">
+                <img src="https://img.daisyui.com/images/profile/demo/yellingwoman@192.webp" class="object-cover" />
+            </div>
+        </div>
+        <p> {{ friend.username }} </p>
+    </div>
+</div>
+
+<main class="mt-24 px-4">
+
+</main>
+{% endblock %}
