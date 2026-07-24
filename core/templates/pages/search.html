@@ -33,12 +33,26 @@
                 </div>
             </div>
             <div>
-                <button class="btn btn-sm rounded-full bg-yellow-300 text-gray-800">
-                    <i class="fa-solid fa-user-plus"></i>
-                    Add
+                {% if user.id in pending %}
+                <button class="btn btn-sm border-none outline-none rounded-full bg-yellow-300 text-gray-800">
+                    <i class="fa-solid fa-clock"></i>
+                    Pending
                 </button>
+                {% elif user.id not in friends %}
+                <form action="{% url 'send-invite' user.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit"
+                        class="btn btn-sm border-none outline-none rounded-full bg-yellow-300 text-gray-800">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Add
+                    </button>
+                </form>
+                {% else %}
+                {% endif %}
             </div>
         </li>
+        {% empty %}
+        <p class="text-gray-400 text-xs text-center">No search results found :)</p>
         {% endfor %}
     </ul>
 </main>

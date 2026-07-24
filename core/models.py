@@ -7,7 +7,6 @@ class FriendRequest(models.Model):
     class StatusChoice(models.TextChoices):
         PENDING = "pending", "Pending"
         ACCEPTED = "accepted", "Accepted"
-        REJECTED = "rejected", "Rejected"
 
     from_user = models.ForeignKey(
         to=User, on_delete=models.CASCADE, related_name="sent_requests"

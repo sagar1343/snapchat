@@ -7,4 +7,5 @@ urlpatterns = [
     path("register/", views.register_view, name="register-user"),
     path("logout/", views.logout_view, name="logout"),
     path("search/", views.search_view, name="search-users"),
+    path("send-invite/<int:id>", views.send_invite, name="send-invite"),
 ]
