@@ -14,9 +14,108 @@
         </div>
         <p> {{ friend.username }} </p>
     </div>
+    <div class="max-w-16 flex flex-row justify-between gap-4 items-center">
+        <i class="fa-solid fa-lg fa-phone"></i>
+        <i class="fa-solid fa-lg fa-video"></i>
+    </div>
 </div>
 
-<main class="mt-24 px-4">
-
+<main class="left-0 right-0 overflow-hidden top-[80px] bottom-[80px] absolute">
+    <div class="h-full flex flex-col justify-end px-4 overscroll-auto">
+        <div class="chat chat-start">
+            <div class="chat-header">
+                Obi-Wan Kenobi
+                <time class="text-xs opacity-50">2 hours ago</time>
+            </div>
+            <div class="chat-bubble">You were the Chosen One!</div>
+            <div class="chat-footer opacity-50">Seen</div>
+        </div>
+        <div class="chat chat-end">
+            <div class="chat-header">
+                Obi-Wan Kenobi
+                <time class="text-xs opacity-50">2 hours ago</time>
+            </div>
+            <div class="chat-bubble">You were the Chosen One!</div>
+            <div class="chat-footer opacity-50">Seen</div>
+        </div>
+        <div class="chat chat-start">
+            <div class="chat-header">
+                Obi-Wan Kenobi
+                <time class="text-xs opacity-50">2 hours ago</time>
+            </div>
+            <div class="chat-bubble">You were the Chosen One!</div>
+            <div class="chat-footer opacity-50">Seen</div>
+        </div>
+        <div class="chat chat-end">
+            <div class="chat-header">
+                Obi-Wan Kenobi
+                <time class="text-xs opacity-50">2 hours ago</time>
+            </div>
+            <div class="chat-bubble">You were the Chosen One!</div>
+            <div class="chat-footer opacity-50">Seen</div>
+        </div>
+        <div class="chat chat-start">
+            <div class="chat-header">
+                Obi-Wan Kenobi
+                <time class="text-xs opacity-50">2 hours ago</time>
+            </div>
+            <div class="chat-bubble">You were the Chosen One!</div>
+            <div class="chat-footer opacity-50">Seen</div>
+        </div>
+        <div class="chat chat-end">
+            <div class="chat-header">
+                Obi-Wan Kenobi
+                <time class="text-xs opacity-50">2 hours ago</time>
+            </div>
+            <div class="chat-bubble">You were the Chosen One!</div>
+            <div class="chat-footer opacity-50">Seen</div>
+        </div>
+        <div class="chat chat-start">
+            <div class="chat-header">
+                Obi-Wan Kenobi
+                <time class="text-xs opacity-50">2 hours ago</time>
+            </div>
+            <div class="chat-bubble">You were the Chosen One!</div>
+            <div class="chat-footer opacity-50">Seen</div>
+        </div>
+        <div class="chat chat-end">
+            <div class="chat-header">
+                Obi-Wan Kenobi
+                <time class="text-xs opacity-50">2 hours ago</time>
+            </div>
+            <div class="chat-bubble">You were the Chosen One!</div>
+            <div class="chat-footer opacity-50">Seen</div>
+        </div>
+        <div class="chat chat-start">
+            <div class="chat-header">
+                Obi-Wan Kenobi
+                <time class="text-xs opacity-50">2 hours ago</time>
+            </div>
+            <div class="chat-bubble">You were the Chosen One!</div>
+            <div class="chat-footer opacity-50">Seen</div>
+        </div>
+        <div class="chat chat-end">
+            <div class="chat-header">
+                Obi-Wan Kenobi
+                <time class="text-xs opacity-50">2 hours ago</time>
+            </div>
+            <div class="chat-bubble">You were the Chosen One!</div>
+            <div class="chat-footer opacity-50">Seen</div>
+        </div>
+    </div>
 </main>
+
+<div class="dock absolute gap-2 px-4 justify-start bottom-0 shadow-xs dock-lg">
+    <button class="max-w-10 rounded-full btn btn-square text-white bg-black">
+        <i class="fa-solid fa-camera"></i>
+    </button>
+
+    <form class="max-w-full flex flex-row gap-4">
+        <input type="text" class="rounded-full input input-border" placeholder="Send chat">
+        <button type="submit" class="rounded-full btn btn-square text-white bg-blue-500">
+            <i class="fa-solid fa-arrow-up"></i>
+        </button>
+    </form>
+
+</div>
 {% endblock %}
