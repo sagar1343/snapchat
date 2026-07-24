@@ -1,28 +1,17 @@
 {% extends 'base.html' %}
 {% block main %}
-<div class="dock shadow-xs px-4 absolute top-0 flex justify-between dock-lg">
-    <div class="flex flex-row gap-3 justify-start items-center">
-        <div class="size-[32px] flex justify-center items-center rounded-full bg-gray-100 p-2">
-            <i class="fa-solid fa-user text-yellow-300"></i>
-        </div>
-        <a href="{% url 'search-users' %}"
-            class="size-[32px] flex justify-center items-center rounded-full bg-gray-100 p-2">
-            <i class="fa-solid fa-magnifying-glass"></i>
+<div class="dock absolute px-4 gap-4 justify-between top-0 shadow-xs dock-lg">
+    <div class="max-w-[20px]">
+        <a href="{% url 'home' %}" class="cursor-pointer">
+            <i class="fa-solid fa-chevron-down"></i>
         </a>
     </div>
-    <h1 class="text-xl font-semibold">Chat</h1>
-    <div class="flex flex-row gap-3 justify-end items-center">
-        <div class="size-[32px] flex justify-center items-center rounded-full bg-gray-100 p-2">
-            <i class="fa-regular fa-bell"></i>
-        </div>
-        <div class="size-[32px] bg-yellow-300 flex justify-center items-center rounded-full p-2">
-            <i class="fa-solid fa-user-plus"></i>
-        </div>
-        <div class="size-[32px] flex justify-center items-center rounded-full bg-gray-100 p-2">
-            <i class="fa-solid fa-ellipsis fa-lg"></i>
-        </div>
-    </div>
+    <label class="outline-none flex max-w-[500px] w-full flex-row h-10 input border-none rounded-full bg-stone-100">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" required placeholder="Search" class="pl-2" />
+    </label>
 </div>
+
 <main class="mt-24 px-4">
     <ul class="space-y-6">
         <li class="flex items-center justify-between">
@@ -36,16 +25,15 @@
                 <div>
                     <h2>Pralove</h2>
                     <p class="flex flex-row items-center gap-1">
-                        <i class="fa-regular fa-message fa-xs text-blue-500"></i>
-                        <span class="text-xs text-gray-400">Recieved</span>
-                        <span class="size-1 rounded-full bg-gray-300">
-                        </span>
-                        <span class="text-xs text-gray-400">1m</span>
+                        <span class="text-xs text-gray-400">pralove123</span>
                     </p>
                 </div>
             </div>
             <div>
-                <i class="fa-solid fa-camera fa-lg text-gray-500"></i>
+                <button class="btn rounded-full bg-yellow-300 text-gray-800">
+                    <i class="fa-solid fa-user-plus"></i>
+                    Add
+                </button>
             </div>
         </li>
         <li class="flex items-center justify-between">
@@ -119,5 +107,3 @@
     </ul>
 </main>
 {% endblock %}
-
-{% include 'components/bottom-navbar.html' %}
