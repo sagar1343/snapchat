@@ -20,9 +20,32 @@
 </head>
 
 <body>
+    <div class="h-screen bg-gray-900 flex justify-center items-center">
+        <div class="h-full relative sm:h-[90vh] bg-white w-full sm:max-w-96 sm:rounded-lg">
+            {% block main %}
+            {% endblock %}
+            <nav class="dock absolute bg-neutral text-neutral-content">
+                <button>
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span class="dock-label">Map</span>
+                </button>
 
-    {% block content %}
-    {% endblock %}
+                <button class="dock-active">
+                    <i class="fa-solid fa-message"></i>
+                    <span class="dock-label">Chat</span>
+                </button>
+
+                <button>
+                    <i class="fa-solid fa-camera"></i>
+                    <span class="dock-label">Camera</span>
+                </button>
+                <button>
+                    <i class="fa-solid fa-user-group"></i>
+                    <span class="dock-label">Stories</span>
+                </button>
+            </nav>
+        </div>
+    </div>
 </body>
 
 </html>
