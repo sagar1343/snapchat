@@ -3,8 +3,9 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import FriendRequest
+from .models import FriendRequest, Message
 from . import forms
+from django.db import IntegrityError
 
 
 # Create your views here.
@@ -56,7 +57,19 @@ def home(request):
 @login_required
 def chat_details_view(request, id):
     friend = get_object_or_404(get_user_model(), pk=id)
-    return render(request, "pages/chat-details.html", {"friend": friend})
+    if not are_friends(request.user, friend):
+        return redirect("home")
+
+    messages = Message.objects.filter(
+        Q(sender=request.user, reciever=friend)
+        | Q(sender=friend, reciever=request.user)
+    ).order_by("created_at")
+
+    return render(
+        request,
+        "pages/chat-details.html",
+        {"friend": friend, "chat_messages": messages},
+    )
 
 
 @login_required
@@ -111,13 +124,33 @@ def send_invite(request, id):
     if id == request.user.id:
         return redirect("search-users")
     to_user = get_object_or_404(get_user_model(), id=id)
-    friends = FriendRequest.objects.filter(
-        Q(from_user=request.user, to_user=to_user)
-        | Q(from_user=to_user, to_user=request.user)
-    ).exists()
 
-    if friends:
-        return redirect("search-users")
+    try:
+        FriendRequest.objects.create(from_uxser=request.user, to_user=to_user)
+    except IntegrityError:
+        redirect("search-users")
 
-    FriendRequest.objects.create(from_user=request.user, to_user=to_user)
     return redirect("search-users")
+
+
+@require_http_methods(["POST"])
+def send_message(request, id):
+    friend = get_object_or_404(get_user_model(), pk=id)
+
+    if not are_friends(request.user, friend):
+        return redirect("home")
+
+    message = request.POST.get("message")
+    if message:
+        Message.objects.create(sender=request.user, reciever=friend, text=message)
+    return redirect("chat-details", id=id)
+
+
+def are_friends(user1, user2):
+    return (
+        FriendRequest.objects.filter(
+            Q(from_user=user1, to_user=user2) | Q(from_user=user2, to_user=user1)
+        )
+        .filter(status=FriendRequest.StatusChoice.ACCEPTED)
+        .exists()
+    )

@@ -24,3 +24,17 @@ class FriendRequest(models.Model):
 
     def __str__(self):
         return f"{self.from_user} -> {self.to_user}: {self.status}"
+
+
+class Message(models.Model):
+    sender = models.ForeignKey(
+        to=User, on_delete=models.CASCADE, related_name="sent_messages"
+    )
+    reciever = models.ForeignKey(
+        to=User, on_delete=models.CASCADE, related_name="recieved_messages"
+    )
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message {self.sender} -> {self.reciever}"
