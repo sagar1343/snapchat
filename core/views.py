@@ -175,3 +175,8 @@ def accept_friend_request(request, id):
         req.status = FriendRequest.StatusChoice.ACCEPTED
         req.save()
     return redirect("friend-requests")
+
+
+@login_required
+def map_view(request):
+    return render(request, "pages/map.html")
