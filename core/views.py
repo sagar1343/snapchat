@@ -3,6 +3,8 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+
+from core.utils import are_friends
 from .models import FriendRequest, Message
 from . import forms
 from django.db import IntegrityError
@@ -64,6 +66,10 @@ def chat_details_view(request, id):
         Q(sender=request.user, reciever=friend)
         | Q(sender=friend, reciever=request.user)
     ).order_by("created_at")
+
+    messages = list(messages)
+    recieved_messages = Message.objects.filter(reciever=request.user, sender=friend)
+    recieved_messages.delete()
 
     return render(
         request,
@@ -133,6 +139,7 @@ def send_invite(request, id):
     return redirect("search-users")
 
 
+@login_required
 @require_http_methods(["POST"])
 def send_message(request, id):
     friend = get_object_or_404(get_user_model(), pk=id)
@@ -148,13 +155,3 @@ def send_message(request, id):
             sender=request.user, reciever=friend, text=message, image=snap
         )
     return redirect("chat-details", id=id)
-
-
-def are_friends(user1, user2):
-    return (
-        FriendRequest.objects.filter(
-            Q(from_user=user1, to_user=user2) | Q(from_user=user2, to_user=user1)
-        )
-        .filter(status=FriendRequest.StatusChoice.ACCEPTED)
-        .exists()
-    )

@@ -1,18 +1,23 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
 
 
 # Create your models here.
+class SnapUser(AbstractUser):
+    avatar = models.ImageField(upload_to="avatar", default="snaps/default.jpg")
+
+
 class FriendRequest(models.Model):
     class StatusChoice(models.TextChoices):
         PENDING = "pending", "Pending"
         ACCEPTED = "accepted", "Accepted"
 
     from_user = models.ForeignKey(
-        to=User, on_delete=models.CASCADE, related_name="sent_requests"
+        to=get_user_model(), on_delete=models.CASCADE, related_name="sent_requests"
     )
     to_user = models.ForeignKey(
-        to=User, on_delete=models.CASCADE, related_name="recieved_requests"
+        to=get_user_model(), on_delete=models.CASCADE, related_name="recieved_requests"
     )
     status = models.CharField(
         max_length=10, choices=StatusChoice.choices, default=StatusChoice.PENDING
@@ -28,10 +33,10 @@ class FriendRequest(models.Model):
 
 class Message(models.Model):
     sender = models.ForeignKey(
-        to=User, on_delete=models.CASCADE, related_name="sent_messages"
+        to=get_user_model(), on_delete=models.CASCADE, related_name="sent_messages"
     )
     reciever = models.ForeignKey(
-        to=User, on_delete=models.CASCADE, related_name="recieved_messages"
+        to=get_user_model(), on_delete=models.CASCADE, related_name="recieved_messages"
     )
     text = models.TextField(blank=True)
     image = models.ImageField(upload_to="snaps", null=True, blank=True)
