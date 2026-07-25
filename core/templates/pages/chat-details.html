@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block main %}
+{% load humanize %}
 <div class="dock absolute gap-2 px-4 justify-start top-0 shadow-xs dock-lg">
     <div class="max-w-[20px]">
         <a href="{% url 'home' %}" class="cursor-pointer">
@@ -27,39 +28,59 @@
         <div class="chat chat-end">
             <div class="chat-header">
                 {{ message.sender }}
-                {% load humanize %}
                 <time class="text-xs opacity-50">{{ message.created_at | timesince }}</time>
             </div>
+            {% if message.text %}
             <div class="chat-bubble">{{ message.text }}</div>
-            <div class="chat-footer opacity-50">Seen</div>
+            {% else %}
+            <div class="chat-bubble p-0 max-w-24 aspect-3/4 rounded-lg overflow-hidden">
+                <img src="{{  message.image.url }}" alt="{{ message.image.name }}" class="w-full h-full object-cover">
+            </div>
+            {% endif %}
         </div>
         {% else %}
         <div class="chat chat-start">
             <div class="chat-header">
                 {{ message.sender }}
-                {% load humanize %}
                 <time class="text-xs opacity-50">{{ message.created_at | timesince }}</time>
             </div>
+            {% if message.text %}
             <div class="chat-bubble">{{ message.text }}</div>
-            <div class="chat-footer opacity-50">Seen</div>
+            {% else %}
+            <div class="chat-bubble p-0 max-w-24 aspect-3/4 rounded-lg overflow-hidden">
+                <img src="{{  message.image.url }}" alt="{{ message.image.name }}" class="w-full h-full object-cover">
+            </div>
+            {% endif %}
         </div>
         {% endif %}
         {% endfor %}
     </div>
 </main>
+<div id="preview-dock"
+    class="dock bg-base-200  absolute gap-2 px-4 justify-start bottom-[72px] shadow-xs dock-lg hidden">
 
+    <div class="flex flex-row justify-start gap-4 max-w-full">
+        <div id="preview-container" class="w-12 h-12 rounded-md overflow-hidden">
+        </div>
+        <div class="grow flex justify-between flex-row">
+            <p id="caption" class="max-w-[20ch] truncate text-xs font-light">Click the button to watch on Jetflix app.
+            </p>
+            <i class="fa-solid fa-xmark"></i>
+        </div>
+    </div>
+</div>
 <div class="dock absolute gap-2 px-4 justify-start bottom-0 shadow-xs dock-lg">
-    <button class="max-w-10 rounded-full btn btn-square text-white bg-black">
+    <button id="file-button" type="button" class="max-w-10 rounded-full btn btn-square text-white bg-black">
         <i class="fa-solid fa-camera"></i>
     </button>
-
-    <form action="{% url 'send-message' friend.id %}" method="post" class="max-w-full flex flex-row gap-4">
+    <form action="{% url 'send-message' friend.id %}" method="post" enctype="multipart/form-data"
+        class="max-w-full flex flex-row gap-4">
         {% csrf_token %}
+        <input id="snap-file" name="image" type="file" class="hidden">
         <input name="message" type="text" class="rounded-full input input-border" placeholder="Send chat">
         <button type="submit" class="rounded-full btn btn-square text-white bg-blue-500">
             <i class="fa-solid fa-arrow-up"></i>
         </button>
     </form>
-
 </div>
 {% endblock %}

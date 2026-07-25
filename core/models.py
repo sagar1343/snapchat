@@ -33,7 +33,8 @@ class Message(models.Model):
     reciever = models.ForeignKey(
         to=User, on_delete=models.CASCADE, related_name="recieved_messages"
     )
-    text = models.TextField()
+    text = models.TextField(blank=True)
+    image = models.ImageField(upload_to="snaps", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
