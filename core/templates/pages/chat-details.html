@@ -67,6 +67,19 @@
     </div>
     {% endif %}
   </main>
+  <div id="preview-dock"
+    class="dock bg-base-200  absolute gap-2 px-4 justify-start bottom-[72px] shadow-xs dock-lg hidden">
+
+    <div class="flex flex-row justify-start gap-4 max-w-full">
+      <div id="preview-container" class="w-12 h-12 rounded-md overflow-hidden">
+      </div>
+      <div class="grow flex justify-between flex-row">
+        <p id="caption" class="max-w-[20ch] truncate text-xs font-light">Click the button to watch on Jetflix app.
+        </p>
+        <i class="fa-solid fa-xmark"></i>
+      </div>
+    </div>
+  </div>
 
   <div class="absolute bottom-0 left-0 right-0 z-20 px-3 pt-2.5 pb-4 bg-white border-t border-neutral-100">
     <form action="{% url 'send-message' friend.id %}" method="post" class="flex items-center gap-2.5">
