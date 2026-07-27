@@ -48,6 +48,7 @@ class Chat(models.Model):
     )
     mode = models.CharField(max_length=16, choices=Mode.choices, default=Mode.ON_CLOSE)
     streak = models.PositiveIntegerField(default=0, editable=False)
+    streak_updated_at = models.DateTimeField(default=timezone.now())
     last_message = models.DateTimeField(default=timezone.now())
     updated_at = models.DateTimeField(auto_now=True)
 

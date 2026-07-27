@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.db import IntegrityError
-from .utils import are_friends, get_friends, get_or_create_chat
+from .utils import are_friends, get_friends, get_or_create_chat, update_streak
 from .models import FriendRequest, Message
 from . import forms
 
@@ -81,7 +81,13 @@ def logout_view(request):
 @login_required
 def home(request):
     friends = get_friends(request.user)
-    return render(request, "pages/chat.html", {"friends": friends})
+    chat_list = []
+    for friend in friends:
+        chat = get_or_create_chat(request.user, friend)
+        chat_list.append((friend, chat))
+
+    chat_list.sort(key=lambda row: row[1].last_message, reverse=True)
+    return render(request, "pages/chat.html", {"chats": chat_list})
 
 
 @login_required
@@ -97,7 +103,7 @@ def chat_details_view(request, id):
 
     messages = list(messages)
     recieved_messages = Message.objects.filter(reciever=request.user, sender=friend)
-    recieved_messages.delete()
+    # recieved_messages.delete()
 
     message_groups = []
     for message in messages:
@@ -194,6 +200,7 @@ def send_message(request, id):
         Message.objects.create(
             chat=chat, sender=request.user, reciever=friend, text=message, image=snap
         )
+        update_streak(chat=chat)
     return redirect("chat-details", id=id)
 
 

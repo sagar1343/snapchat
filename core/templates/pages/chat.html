@@ -28,9 +28,10 @@
     </div>
 
     <main class="flex-1 overflow-y-auto mt-[60px] px-3 pb-24">
-        {% if friends %}
+        {% if chats %}
         <div class="space-y-0.5">
-            {% for friend in friends %}
+            {% for friend, chat in chats %}
+            {{ friend. }}
             <a href="{% url 'chat-details' friend.id %}"
                 class="flex items-center px-2 py-3 rounded-xl hover:bg-neutral-50 transition-colors">
                 <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -42,6 +43,9 @@
                             <span class="item-meta">Received</span>
                             <span class="size-1 rounded-full bg-neutral-300"></span>
                             <span class="item-meta">now</span>
+                            <span class="size-1 rounded-full bg-neutral-300"></span>
+                            <span class="item-meta">{{ chat.streak }}</span>
+                            <i class="fa-solid fa-fire fa-xs" style="color: rgb(241, 99, 47);"></i>
                         </p>
                     </div>
                 </div>
