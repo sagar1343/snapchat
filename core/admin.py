@@ -1,6 +1,6 @@
 from django.contrib.auth.admin import UserAdmin
 from django.contrib import admin
-from .models import FriendRequest, Message, SnapUser
+from .models import FriendRequest, Message, SnapUser, Chat
 
 # Register your models here.
 
@@ -13,3 +13,4 @@ class MyUserAdmin(UserAdmin):
 admin.site.register(SnapUser, MyUserAdmin)
 admin.site.register(FriendRequest)
 admin.site.register(Message)
+admin.site.register(Chat)

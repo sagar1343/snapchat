@@ -1,4 +1,4 @@
-from .models import FriendRequest
+from .models import FriendRequest, Chat
 from django.db.models import Q
 
 
@@ -24,3 +24,10 @@ def get_friends(user):
         else:
             friends.append(fr.from_user)
     return friends
+
+
+def get_or_create_chat(user1, user2):
+    if user1.id > user2.id:
+        user1, user2 = user2, user1
+    chat, _ = Chat.objects.get_or_create(user1=user1, user2=user2)
+    return chat

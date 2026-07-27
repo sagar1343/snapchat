@@ -67,6 +67,7 @@
     </div>
     {% endif %}
   </main>
+
   <div id="preview-dock"
     class="dock bg-base-200  absolute gap-2 px-4 justify-start bottom-[72px] shadow-xs dock-lg hidden">
 
@@ -81,15 +82,17 @@
     </div>
   </div>
 
-  <div class="absolute bottom-0 left-0 right-0 z-20 px-3 pt-2.5 pb-4 bg-white border-t border-neutral-100">
-    <form action="{% url 'send-message' friend.id %}" method="post" class="flex items-center gap-2.5">
+  <div class="dock absolute gap-2 px-4 justify-start bottom-0 shadow-xs dock-lg">
+    <button id="file-button" type="button" class="max-w-10 rounded-full btn btn-square text-white bg-black">
+      <i class="fa-solid fa-camera"></i>
+    </button>
+    <form action="{% url 'send-message' friend.id %}" method="post" enctype="multipart/form-data"
+      class="max-w-full flex flex-row gap-4">
       {% csrf_token %}
-      <input name="message" type="text" autocomplete="off"
-        class="flex-1 min-w-0 h-9 rounded-full bg-neutral-100 border-0 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300"
-        placeholder="Send a chat">
-      <button type="submit"
-        class="size-9 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0">
-        <i class="fa-solid fa-arrow-up text-sm"></i>
+      <input id="snap-file" name="image" type="file" class="hidden">
+      <input name="message" type="text" class="rounded-full input input-border" placeholder="Send chat">
+      <button type="submit" class="rounded-full btn btn-square text-white bg-blue-500">
+        <i class="fa-solid fa-arrow-up"></i>
       </button>
     </form>
   </div>

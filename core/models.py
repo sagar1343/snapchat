@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 
 # Create your models here.
@@ -47,7 +48,7 @@ class Chat(models.Model):
     )
     mode = models.CharField(max_length=16, choices=Mode.choices, default=Mode.ON_CLOSE)
     streak = models.PositiveIntegerField(default=0, editable=False)
-    last_message = models.DateTimeField()
+    last_message = models.DateTimeField(default=timezone.now())
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

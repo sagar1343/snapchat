@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.db import IntegrityError
-from .utils import are_friends, get_friends
+from .utils import are_friends, get_friends, get_or_create_chat
 from .models import FriendRequest, Message
 from . import forms
 
@@ -190,8 +190,9 @@ def send_message(request, id):
     snap = request.FILES.get("image")
 
     if message or snap:
+        chat = get_or_create_chat(request.user, friend)
         Message.objects.create(
-            sender=request.user, reciever=friend, text=message, image=snap
+            chat=chat, sender=request.user, reciever=friend, text=message, image=snap
         )
     return redirect("chat-details", id=id)
 
