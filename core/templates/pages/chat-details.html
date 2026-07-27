@@ -40,6 +40,16 @@
         {% endif %}
 
         {% for message in group.messages %}
+        {% if message.image %}
+        <div class="flex gap-1.5 items-stretch">
+          <div
+            class="w-[2px] shrink-0 {% if first_msg.sender_id == request.user.id %}bg-red-500{% else %}bg-[#00B8FF]{% endif %}">
+          </div>
+          <a href="{{ message.image.url }}" target="_blank" class="block my-1">
+            <img src="{{ message.image.url }}" alt="snap" class="max-w-[180px] max-h-[240px] rounded-lg object-cover">
+          </a>
+        </div>
+        {% endif %}
         {% if message.text %}
         <div class="flex gap-1.5 items-stretch">
           <div
@@ -89,7 +99,7 @@
     <form action="{% url 'send-message' friend.id %}" method="post" enctype="multipart/form-data"
       class="max-w-full flex flex-row gap-4">
       {% csrf_token %}
-      <input id="snap-file" name="image" type="file" class="hidden">
+      <input id="snap-file" name="image" type="file" accept="image/*" class="hidden">
       <input name="message" type="text" class="rounded-full input input-border" placeholder="Send chat">
       <button type="submit" class="rounded-full btn btn-square text-white bg-blue-500">
         <i class="fa-solid fa-arrow-up"></i>

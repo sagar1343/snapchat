@@ -4,20 +4,15 @@ const previewDock = document.getElementById("preview-dock");
 const previewContainer = document.getElementById("preview-container");
 const caption = document.getElementById("caption");
 
-fileBtn.addEventListener("click", () => {
-  snapFile.click();
-});
+if (fileBtn && snapFile) {
+  fileBtn.addEventListener("click", () => snapFile.click());
 
-snapFile.addEventListener("change", () => {
-  const currentFile = snapFile.files[0];
+  snapFile.addEventListener("change", () => {
+    const file = snapFile.files[0];
+    if (!file || !previewDock || !previewContainer || !caption) return;
 
-  const image = ` <img
-      id="preview-snap"
-      src="${URL.createObjectURL(currentFile)}"
-      alt="${currentFile.name}"
-      class="object-cover h-full w-full"
-    />`;
-  previewContainer.innerHTML = image;
-  caption.innerText = currentFile.name;
-  previewDock.style.display = "block";
-});
+    previewContainer.innerHTML = `<img src="${URL.createObjectURL(file)}" class="object-cover h-full w-full">`;
+    caption.innerText = file.name;
+    previewDock.classList.remove("hidden");
+  });
+}

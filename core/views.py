@@ -4,6 +4,7 @@ from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.db import IntegrityError
+from django.utils import timezone
 from .utils import are_friends, get_friends, get_or_create_chat, update_streak
 from .models import FriendRequest, Message
 from . import forms
@@ -200,6 +201,8 @@ def send_message(request, id):
         Message.objects.create(
             chat=chat, sender=request.user, reciever=friend, text=message, image=snap
         )
+        chat.last_message = timezone.now()
+        chat.save(update_fields=["last_message"])
         update_streak(chat=chat)
     return redirect("chat-details", id=id)
 

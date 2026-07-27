@@ -1,7 +1,10 @@
 from .models import FriendRequest, Chat
 from django.db.models import Q
 from django.utils import timezone
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from datetime import timedelta
+
+User = get_user_model()
 
 
 def are_friends(user1, user2):
@@ -44,21 +47,18 @@ def has_user_send_snap_today(chat: Chat, user: User):
 
 
 def is_continous_streak(last_streak_updated_at, now):
-    return last_streak_updated_at.date() == now.date()
+    return last_streak_updated_at.date() + timedelta(days=1) == now.date()
 
 
 def update_streak(chat: Chat):
     now = timezone.now()
-    if chat.streak_updated_at.date() + timezone.timedelta(days=1) == now.date():
+    if chat.streak_updated_at.date() == now.date():
         return
 
     user1_snap = has_user_send_snap_today(chat, chat.user1)
     user2_snap = has_user_send_snap_today(chat, chat.user2)
 
-    print(user1_snap, user2_snap)
-
     if user1_snap and user2_snap:
-        print(is_continous_streak(chat.streak_updated_at, now))
         if is_continous_streak(chat.streak_updated_at, now):
             chat.streak += 1
         else:
