@@ -38,10 +38,11 @@ def get_or_create_chat(user1, user2):
     return chat
 
 
-def has_user_send_snap_today(chat: Chat, user: User):
+def has_user_send_snap_today(chat, user):
     return (
         chat.messages.filter(sender=user, created_at__date=timezone.now())
-        .filter(image__isnull=False)
+        .filter(image="")
+        .filter(image=None)
         .exists()
     )
 

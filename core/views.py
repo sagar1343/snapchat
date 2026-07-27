@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.db import IntegrityError
 from django.utils import timezone
 from .utils import are_friends, get_friends, get_or_create_chat, update_streak
-from .models import FriendRequest, Message
+from .models import FriendRequest, Message, Chat
 from . import forms
 
 
@@ -85,7 +85,13 @@ def home(request):
     chat_list = []
     for friend in friends:
         chat = get_or_create_chat(request.user, friend)
-        chat_list.append((friend, chat))
+
+        last_message = chat.messages.order_by("-created_at").first()
+        if last_message.image:
+            last_message = "new snap"
+        else:
+            last_message = last_message.text
+        chat_list.append((friend, chat, last_message))
 
     chat_list.sort(key=lambda row: row[1].last_message, reverse=True)
     return render(request, "pages/chat.html", {"chats": chat_list})
@@ -93,21 +99,25 @@ def home(request):
 
 @login_required
 def chat_details_view(request, id):
-    friend = get_object_or_404(get_user_model(), pk=id)
-    if not are_friends(request.user, friend):
-        return redirect("home")
+    chat = get_object_or_404(Chat, pk=id)
+    messages = chat.messages.all().order_by("created_at")
+    update_streak(chat)
 
-    messages = Message.objects.filter(
-        Q(sender=request.user, reciever=friend)
-        | Q(sender=friend, reciever=request.user)
-    ).order_by("created_at")
+    friend = chat.user1
+    if chat.user1 == request.user:
+        friend = chat.user2
 
-    messages = list(messages)
-    recieved_messages = Message.objects.filter(reciever=request.user, sender=friend)
-    # recieved_messages.delete()
+    if chat.mode == chat.Mode.ON_CLOSE:
+        recieved_messages = Message.objects.filter(reciever=request.user, sender=friend)
+
+        recieved_messages.delete()
+    elif chat.mode == chat.Mode.AFTER_24HR:
+        now = timezone.now()
+        grace_period = now - timezone.timedelta(days=1)
+        messages = messages.filter(created_at__gte=grace_period)
 
     message_groups = []
-    for message in messages:
+    for message in list(messages):
         if not message_groups or message_groups[-1]["sender_id"] != message.sender_id:
             message_groups.append(
                 {"sender_id": message.sender_id, "messages": [message]}

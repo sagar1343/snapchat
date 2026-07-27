@@ -30,9 +30,8 @@
     <main class="flex-1 overflow-y-auto mt-[60px] px-3 pb-24">
         {% if chats %}
         <div class="space-y-0.5">
-            {% for friend, chat in chats %}
-            {{ friend. }}
-            <a href="{% url 'chat-details' friend.id %}"
+            {% for friend, chat, last_message in chats %}
+            <a href="{% url 'chat-details' chat.id %}"
                 class="flex items-center px-2 py-3 rounded-xl hover:bg-neutral-50 transition-colors">
                 <div class="flex items-center gap-3 min-w-0 flex-1">
                     {% include 'components/avatar.html' with user=friend size='md' ring='yes' %}
@@ -40,7 +39,7 @@
                         <h2 class="item-title truncate">{{ friend.username }}</h2>
                         <p class="flex items-center gap-1.5 mt-0.5">
                             <i class="fa-solid fa-square text-[8px] text-blue-500"></i>
-                            <span class="item-meta">Received</span>
+                            <span class="item-meta">{{ last_message }}</span>
                             <span class="size-1 rounded-full bg-neutral-300"></span>
                             <span class="item-meta">now</span>
                             <span class="size-1 rounded-full bg-neutral-300"></span>
