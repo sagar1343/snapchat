@@ -1,56 +1,68 @@
 {% extends 'base.html' %}
 {% block main %}
-<div class="dock shadow-xs px-4 absolute top-0 flex justify-between dock-lg">
-    <div class="flex flex-row gap-3 justify-start items-center">
-        <div class="size-[32px] flex justify-center items-center rounded-full bg-gray-100 p-2">
-            <i class="fa-solid fa-user text-yellow-300"></i>
+<div class="h-full flex flex-col bg-white">
+    <div class="absolute top-0 left-0 right-0 z-20 px-3 pt-3 pb-2 bg-white border-b border-neutral-100">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <a href="{% url 'profile' %}" class="relative">
+                    {% include 'components/avatar.html' with user=request.user size='sm' %}
+                </a>
+                <a href="{% url 'search-users' %}"
+                    class="size-8 flex justify-center items-center rounded-full bg-neutral-100">
+                    <i class="fa-solid fa-magnifying-glass text-sm text-neutral-700"></i>
+                </a>
+            </div>
+
+            <h1 class="page-title">Chat</h1>
+
+            <div class="flex items-center gap-2">
+                <button type="button" class="size-8 flex justify-center items-center rounded-full bg-neutral-100">
+                    <i class="fa-regular fa-bell text-sm text-neutral-700"></i>
+                </button>
+                <a href="{% url 'friend-requests' %}"
+                    class="size-8 bg-[#FFFC00] flex justify-center items-center rounded-full">
+                    <i class="fa-solid fa-user-plus text-sm text-black"></i>
+                </a>
+            </div>
         </div>
-        <a href="{% url 'search-users' %}"
-            class="size-[32px] flex justify-center items-center rounded-full bg-gray-100 p-2">
-            <i class="fa-solid fa-magnifying-glass"></i>
-        </a>
     </div>
-    <h1 class="text-xl font-semibold">Chat</h1>
-    <div class="flex flex-row gap-3 justify-end items-center">
-        <div class="size-[32px] flex justify-center items-center rounded-full bg-gray-100 p-2">
-            <i class="fa-regular fa-bell"></i>
-        </div>
-        <a href="{% url 'friend-requests' %}"
-            class="size-[32px] bg-yellow-300 flex justify-center items-center rounded-full p-2">
-            <i class="fa-solid fa-user-plus"></i>
-        </a>
-        <div class="size-[32px] flex justify-center items-center rounded-full bg-gray-100 p-2">
-            <i class="fa-solid fa-ellipsis fa-lg"></i>
-        </div>
-    </div>
-</div>
-<main class="mt-24 px-4">
-    <div class="space-y-6">
-        {% for friend in friends %}
-        <a href="{% url 'chat-details' friend.id  %}" class="flex items-center justify-between">
-            <div class="flex flex-row gap-4">
-                <div class="avatar">
-                    <div class="ring-purple-600 w-10 h-10 rounded-full ring-2 ring-offset-2">
-                        <img src="{{ friend.avatar.url }}" class="object-cover" />
+
+    <main class="flex-1 overflow-y-auto mt-[60px] px-3 pb-24">
+        {% if friends %}
+        <div class="space-y-0.5">
+            {% for friend in friends %}
+            <a href="{% url 'chat-details' friend.id %}"
+                class="flex items-center px-2 py-3 rounded-xl hover:bg-neutral-50 transition-colors">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    {% include 'components/avatar.html' with user=friend size='md' ring='yes' %}
+                    <div class="min-w-0">
+                        <h2 class="item-title truncate">{{ friend.username }}</h2>
+                        <p class="flex items-center gap-1.5 mt-0.5">
+                            <i class="fa-solid fa-square text-[8px] text-blue-500"></i>
+                            <span class="item-meta">Received</span>
+                            <span class="size-1 rounded-full bg-neutral-300"></span>
+                            <span class="item-meta">now</span>
+                        </p>
                     </div>
                 </div>
-                <div>
-                    <h2>{{ friend.username }}</h2>
-                    <p class="flex flex-row items-center gap-1">
-                        <i class="fa-regular fa-message fa-xs text-blue-500"></i>
-                        <span class="text-xs text-gray-400">Recieved</span>
-                        <span class="size-1 rounded-full bg-gray-300">
-                        </span>
-                        <span class="text-xs text-gray-400">1m</span>
-                    </p>
-                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="flex flex-col items-center justify-center pt-24 px-8 text-center">
+            <div class="w-14 h-14 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
+                <i class="fa-solid fa-comment text-xl text-neutral-400"></i>
             </div>
-            <div>
-                <i class="fa-solid fa-camera fa-lg text-gray-500"></i>
-            </div>
-        </a>
-        {% endfor %}
-    </div>
-</main>
-{% include 'components/bottom-navbar.html' %}
+            <h3 class="item-title">No chats yet</h3>
+            <p class="item-meta mt-1">Search friends and send an invite</p>
+            <a href="{% url 'search-users' %}"
+                class="btn btn-sm mt-5 rounded-full border-0 bg-black text-white font-semibold px-6">
+                Find Friends
+            </a>
+        </div>
+        {% endif %}
+    </main>
+
+    {% include 'components/bottom-navbar.html' %}
+</div>
 {% endblock %}

@@ -1,58 +1,67 @@
 {% extends 'base.html' %}
 {% block main %}
-<div class="dock absolute px-4 gap-4 justify-between top-0 shadow-xs dock-lg">
-    <div class="max-w-[20px]">
-        <a href="{% url 'home' %}" class="cursor-pointer">
-            <i class="fa-solid fa-chevron-down"></i>
-        </a>
-    </div>
-    <form novalidate action="{% url 'search-users' %}" method="get" class="max-w-[500px] w-full">
-        <label class="outline-none flex flex-row h-10 input border-none rounded-full bg-stone-100">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input name="username" type="search" required placeholder="Search" class="pl-2" />
-        </label>
+<div class="h-full flex flex-col bg-white">
+  <div
+    class="absolute top-0 left-0 right-0 z-20 px-3 py-3 bg-white border-b border-neutral-100 flex items-center gap-3">
+    <a href="{% url 'home' %}" class="size-8 flex items-center justify-center rounded-full hover:bg-neutral-100">
+      <i class="fa-solid fa-chevron-down text-black"></i>
+    </a>
+    <form novalidate action="{% url 'search-users' %}" method="get" class="flex-1">
+      <label class="flex items-center gap-2 h-10 px-3 rounded-full bg-neutral-100">
+        <i class="fa-solid fa-magnifying-glass text-neutral-400 text-sm"></i>
+        <input name="username" type="search" value="{{ search|default:'' }}" required placeholder="Search by username"
+          class="flex-1 bg-transparent border-0 outline-none text-sm placeholder:text-neutral-400" />
+      </label>
     </form>
-</div>
+  </div>
 
-<main class="mt-24 px-4">
-    <ul class="space-y-6">
-        {% for user in users %}
-        <li class="flex items-center justify-between">
-            <div class="flex flex-row gap-4">
-                <div class="avatar">
-                    <div class="ring-purple-600 w-10 h-10 rounded-full ring-2 ring-offset-2">
-                        <img src="{{ user.avatar.url }}" class="object-cover" />
-                    </div>
-                </div>
-                <div>
-                    <h2>{{ user.username }}</h2>
-                    <p class="flex flex-row items-center gap-1">
-                        <span class="text-xs text-gray-400">{{ user.username }}</span>
-                    </p>
-                </div>
-            </div>
-            <div>
-                {% if user.id in pending %}
-                <button class="btn btn-sm border-none outline-none rounded-full bg-yellow-300 text-gray-800">
-                    <i class="fa-solid fa-clock"></i>
-                    Pending
-                </button>
-                {% elif user.id not in friends %}
-                <form action="{% url 'send-invite' user.id %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit"
-                        class="btn btn-sm border-none outline-none rounded-full bg-yellow-300 text-gray-800">
-                        <i class="fa-solid fa-user-plus"></i>
-                        Add
-                    </button>
-                </form>
-                {% else %}
-                {% endif %}
-            </div>
-        </li>
-        {% empty %}
-        <p class="text-gray-400 text-xs text-center">No search results found :)</p>
-        {% endfor %}
+  <main class="mt-[64px] px-3 pb-8 overflow-y-auto">
+    <ul class="space-y-0.5">
+      {% for user in users %}
+      <li class="flex items-center justify-between px-2 py-3 rounded-xl hover:bg-neutral-50">
+        <div class="flex items-center gap-3 min-w-0">
+          {% include 'components/avatar.html' with user=user size='md' ring='yes' %}
+          <div class="min-w-0">
+            <h2 class="item-title truncate">{{ user.username }}</h2>
+            <p class="item-meta">{{ user.username }}</p>
+          </div>
+        </div>
+        <div class="shrink-0">
+          {% if user.id in friends %}
+          <a href="{% url 'chat-details' user.id %}"
+            class="btn btn-sm border-0 rounded-full bg-blue-500 text-white font-semibold px-4">
+            Chat
+          </a>
+          {% elif user.id in sent %}
+          <button type="button"
+            class="btn btn-sm border-0 rounded-full bg-neutral-200 text-neutral-600 font-semibold px-4" disabled>
+            Sent
+          </button>
+          {% elif user.id in received %}
+          <a href="{% url 'friend-requests' %}"
+            class="btn btn-sm border-0 rounded-full bg-neutral-200 text-neutral-600 font-semibold px-4">
+            Pending
+          </a>
+          {% else %}
+          <form action="{% url 'send-invite' user.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm border-0 rounded-full bg-[#FFFC00] text-black font-semibold px-4">
+              Add
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </li>
+      {% empty %}
+      <div class="flex flex-col items-center pt-20 text-center px-8">
+        <div class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-3">
+          <i class="fa-solid fa-magnifying-glass text-neutral-400"></i>
+        </div>
+        <p class="item-title">Find your friends</p>
+        <p class="item-meta mt-1">Search by username to send an invite</p>
+      </div>
+      {% endfor %}
     </ul>
-</main>
+  </main>
+</div>
 {% endblock %}

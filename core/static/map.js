@@ -1,7 +1,7 @@
 navigator.geolocation.getCurrentPosition(
   (position) => {
     const map = new mapboxgl.Map({
-      accessToken: "USE_YOUR_MAPBOX_TOKEN",
+      accessToken: window.MAPBOX_ACCESS_TOKEN || "",
       container: "map",
       style: "mapbox://styles/mapbox/satellite-streets-v12",
       projection: "globe",

@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.db import IntegrityError
-from .utils import are_friends
+from .utils import are_friends, get_friends
 from .models import FriendRequest, Message
 from . import forms
 
@@ -15,7 +15,7 @@ def register_view(request):
     if request.user.is_authenticated:
         return redirect("home")
 
-    form = forms.RegisterForm(request.POST or None)
+    form = forms.RegisterForm(request.POST or None, request.FILES or None)
     if request.method == "POST" and form.is_valid():
         user = form.save()
         login(request, user)
@@ -35,6 +35,44 @@ def login_view(request):
     return render(request, "accounts/login.html", {"form": form})
 
 
+@login_required
+def profile_view(request):
+    return render(request, "accounts/profile.html")
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def change_avatar_view(request):
+    form = forms.ChangeAvatarForm(
+        request.POST or None,
+        request.FILES or None,
+        instance=request.user,
+    )
+    if request.method == "POST" and form.is_valid():
+        old_name = request.user.avatar.name if request.user.avatar else None
+        form.save()
+        defaults = ("snaps/default.jpg", "avatar/default.jpg")
+        if (
+            old_name
+            and old_name not in defaults
+            and old_name != request.user.avatar.name
+        ):
+            request.user.avatar.storage.delete(old_name)
+        return redirect("profile")
+    return render(request, "accounts/change-avatar.html", {"form": form})
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def edit_username_view(request):
+    form = forms.EditUsernameForm(request.POST or None, instance=request.user)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect("profile")
+    return render(request, "accounts/edit-username.html", {"form": form})
+
+
+@require_http_methods(["POST"])
 def logout_view(request):
     logout(request)
     return redirect("login")
@@ -42,16 +80,7 @@ def logout_view(request):
 
 @login_required
 def home(request):
-    friend_requests = FriendRequest.objects.filter(
-        status=FriendRequest.StatusChoice.ACCEPTED
-    ).filter(Q(from_user=request.user) | Q(to_user=request.user))
-
-    friends = []
-    for friend in friend_requests:
-        if request.user == friend.from_user:
-            friends.append(friend.to_user)
-        else:
-            friends.append(friend.from_user)
+    friends = get_friends(request.user)
     return render(request, "pages/chat.html", {"friends": friends})
 
 
@@ -70,10 +99,19 @@ def chat_details_view(request, id):
     recieved_messages = Message.objects.filter(reciever=request.user, sender=friend)
     recieved_messages.delete()
 
+    message_groups = []
+    for message in messages:
+        if not message_groups or message_groups[-1]["sender_id"] != message.sender_id:
+            message_groups.append(
+                {"sender_id": message.sender_id, "messages": [message]}
+            )
+        else:
+            message_groups[-1]["messages"].append(message)
+
     return render(
         request,
         "pages/chat-details.html",
-        {"friend": friend, "chat_messages": messages},
+        {"friend": friend, "message_groups": message_groups},
     )
 
 
@@ -82,7 +120,8 @@ def search_view(request):
     users = []
     friends = []
     unique_friends = []
-    pending = []
+    sent = []
+    received = []
 
     search_username = request.GET.get("username")
     if search_username:
@@ -107,9 +146,9 @@ def search_view(request):
 
         for req in pending_requests:
             if request.user == req.from_user:
-                pending.append(req.to_user.id)
+                sent.append(req.to_user.id)
             else:
-                pending.append(req.from_user.id)
+                received.append(req.from_user.id)
 
     return render(
         request,
@@ -117,8 +156,9 @@ def search_view(request):
         {
             "users": users,
             "friends": unique_friends,
-            "pending": pending,
-            "search": search_username,
+            "sent": sent,
+            "received": received,
+            "search": search_username or "",
         },
     )
 
@@ -131,9 +171,9 @@ def send_invite(request, id):
     to_user = get_object_or_404(get_user_model(), id=id)
 
     try:
-        FriendRequest.objects.create(from_uxser=request.user, to_user=to_user)
+        FriendRequest.objects.create(from_user=request.user, to_user=to_user)
     except IntegrityError:
-        redirect("search-users")
+        return redirect("search-users")
 
     return redirect("search-users")
 
@@ -146,13 +186,10 @@ def send_message(request, id):
     if not are_friends(request.user, friend):
         return redirect("home")
 
-    message = request.POST.get("message")
-    snap = request.FILES.get("image")
+    message = (request.POST.get("message") or "").strip()
 
-    if message or snap:
-        Message.objects.create(
-            sender=request.user, reciever=friend, text=message, image=snap
-        )
+    if message:
+        Message.objects.create(sender=request.user, reciever=friend, text=message)
     return redirect("chat-details", id=id)
 
 
@@ -179,4 +216,10 @@ def accept_friend_request(request, id):
 
 @login_required
 def map_view(request):
-    return render(request, "pages/map.html")
+    from django.conf import settings
+
+    return render(
+        request,
+        "pages/map.html",
+        {"mapbox_token": settings.MAPBOX_ACCESS_TOKEN},
+    )

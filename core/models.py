@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 
 # Create your models here.
 class SnapUser(AbstractUser):
-    avatar = models.ImageField(upload_to="avatar", default="snaps/default.jpg")
+    avatar = models.ImageField(upload_to="avatar", default="avatar/default.jpg")
 
 
 class FriendRequest(models.Model):
@@ -39,7 +39,6 @@ class Message(models.Model):
         to=get_user_model(), on_delete=models.CASCADE, related_name="recieved_messages"
     )
     text = models.TextField(blank=True)
-    image = models.ImageField(upload_to="snaps", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
