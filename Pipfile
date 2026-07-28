@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 django = "*"
 pillow = "*"
+djangorestframework = "*"
+channels = {extras = ["daphne"], version = "*"}
+types-channels = "*"
 
 [dev-packages]
 

@@ -3,6 +3,9 @@ const fileBtn = document.getElementById("file-button");
 const previewDock = document.getElementById("preview-dock");
 const previewContainer = document.getElementById("preview-container");
 const caption = document.getElementById("caption");
+const longi = document.getElementById("id_longitude");
+const lati = document.getElementById("id_latitude");
+const lf = document.getElementById("locationform");
 
 if (fileBtn && snapFile) {
   fileBtn.addEventListener("click", () => snapFile.click());
@@ -16,3 +19,15 @@ if (fileBtn && snapFile) {
     previewDock.classList.remove("hidden");
   });
 }
+
+// navigator.geolocation.getCurrentPosition(
+//   (position) => {
+//     latitude = position.coords.latitude;
+//     longitude = position.coords.longitude;
+
+//     lati.value = latitude;
+//     longi.value = longitude;
+//     lf.submit();
+//   },
+//   (err) => {},
+// );

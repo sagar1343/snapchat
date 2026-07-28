@@ -7,7 +7,9 @@ from .models import FriendRequest, Message, SnapUser, Chat
 
 class MyUserAdmin(UserAdmin):
     model = SnapUser
-    fieldsets = UserAdmin.fieldsets + ((None, {"fields": ("avatar",)}),)
+    fieldsets = UserAdmin.fieldsets + (
+        (None, {"fields": ("avatar", "longitude", "latitude")}),
+    )
 
 
 admin.site.register(SnapUser, MyUserAdmin)

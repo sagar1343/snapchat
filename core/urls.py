@@ -10,10 +10,14 @@ urlpatterns = [
     path("profile/username/", views.edit_username_view, name="edit-username"),
     path("logout/", views.logout_view, name="logout"),
     path("search/", views.search_view, name="search-users"),
+    path("camera/", views.camera_view, name="camera"),
     path("send-invite/<int:id>", views.send_invite, name="send-invite"),
     path("chat-details/<int:id>", views.chat_details_view, name="chat-details"),
     path("send-message/<int:id>", views.send_message, name="send-message"),
     path("friend-requests/", views.friend_request_list_view, name="friend-requests"),
-    path("accept-requests/<int:id>", views.accept_friend_request, name="accept-friend"),
+    path(
+        "accept-requests/<int:id>/", views.accept_friend_request, name="accept-friend"
+    ),
     path("map/", views.map_view, name="map-view"),
+    # path("location/", views.update_location, name="location"),
 ]

@@ -38,7 +38,7 @@ def get_or_create_chat(user1, user2):
     return chat
 
 
-def has_user_send_snap_today(chat, user):
+def has_user_sent_snap_today(chat, user):
     return (
         chat.messages.filter(sender=user, created_at__date=timezone.now())
         .filter(image="")
@@ -56,8 +56,8 @@ def update_streak(chat: Chat):
     if chat.streak_updated_at.date() == now.date():
         return
 
-    user1_snap = has_user_send_snap_today(chat, chat.user1)
-    user2_snap = has_user_send_snap_today(chat, chat.user2)
+    user1_snap = has_user_sent_snap_today(chat, chat.user1)
+    user2_snap = has_user_sent_snap_today(chat, chat.user2)
 
     if user1_snap and user2_snap:
         if is_continous_streak(chat.streak_updated_at, now):

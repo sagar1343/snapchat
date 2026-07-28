@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.db import IntegrityError
 from django.utils import timezone
+from rest_framework.decorators import api_view
+from django.views.decorators.csrf import csrf_exempt
 from .utils import are_friends, get_friends, get_or_create_chat, update_streak
 from .models import FriendRequest, Message, Chat
 from . import forms
@@ -82,6 +84,7 @@ def logout_view(request):
 @login_required
 def home(request):
     friends = get_friends(request.user)
+    locationform = forms.LocationForm()
     chat_list = []
     for friend in friends:
         chat = get_or_create_chat(request.user, friend)
@@ -94,7 +97,9 @@ def home(request):
         chat_list.append((friend, chat, last_message))
 
     chat_list.sort(key=lambda row: row[1].last_message, reverse=True)
-    return render(request, "pages/chat.html", {"chats": chat_list})
+    return render(
+        request, "pages/chat.html", {"chats": chat_list, "locationform": locationform}
+    )
 
 
 @login_required
@@ -206,15 +211,15 @@ def send_message(request, id):
     message = request.POST.get("message") or ""
     snap = request.FILES.get("image")
 
+    chat = get_or_create_chat(request.user, friend)
     if message or snap:
-        chat = get_or_create_chat(request.user, friend)
         Message.objects.create(
             chat=chat, sender=request.user, reciever=friend, text=message, image=snap
         )
         chat.last_message = timezone.now()
         chat.save(update_fields=["last_message"])
         update_streak(chat=chat)
-    return redirect("chat-details", id=id)
+    return redirect("chat-details", id=chat.id)
 
 
 @login_required
@@ -247,3 +252,20 @@ def map_view(request):
         "pages/map.html",
         {"mapbox_token": settings.MAPBOX_ACCESS_TOKEN},
     )
+
+
+# @api_view(["POST"])
+# def update_location(request):
+#     user = get_object_or_404(get_user_model(), pk=request.user.id)
+#     form = forms.LocationForm(request.POST or None)
+#     if form.is_valid():
+#         user.longitude = form.cleaned_data.get("longitude")
+#         user.latitude = form.cleaned_data.get("latitude")
+#         user.save()
+#     print(form.errors)
+#     print(user.longitude)
+#     return redirect("home")
+
+
+def camera_view(request):
+    return render(request, "pages/camera.html")
