@@ -1,0 +1,82 @@
+import json
+
+from channels.generic.websocket import AsyncWebsocketConsumer
+from django.utils import timezone
+from .models import Chat, Message
+from django.db.models import Q
+from channels.db import database_sync_to_async
+from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+
+
+class ChatConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        user = self.scope["user"]
+        print(self.scope)
+        if not user.is_authenticated:
+            await self.close()
+            return
+
+        self.chat_id = self.scope["url_route"]["kwargs"]["chat_id"]
+        self.group_name = f"chat_{self.chat_id}"
+
+        allowed = await self._is_chat_member(user.id, self.chat_id)
+        if not allowed:
+            await self.close()
+            return
+
+        self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, code):
+        return self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def receive(self, text_data=None):
+        user = self.scope["user"]
+        payload = json.loads(text_data)
+        text = payload.get("message")
+        if not text:
+            return
+
+        saved = await self._save_message(self.chat_id, user.id, text)
+        self.channel_layer.group_send(
+            self.group_name,
+            {
+                "type": "message",
+                "message": saved["text"],
+                "sender_id": saved[
+                    "sender_id", "sender_username" : saved["sender_username"]
+                ],
+                "created_at": saved["created_at"],
+            },
+        )
+
+    @database_sync_to_async
+    async def _is_chat_member(self, user_id, chat_id):
+        return (
+            Chat.objects.filter(id=chat_id)
+            .filter(Q(user1=user_id) | Q(user2=user_id))
+            .exists()
+        )
+
+    @database_sync_to_async
+    async def _save_message(self, chat_id, sender_id, text_message):
+        sender = get_object_or_404(get_user_model(), pk=sender_id)
+        chat = Chat.objects.get(pk=chat_id)
+        reciever = chat.user2
+        if sender.id == chat.user2.id:
+            reciever = chat.user1
+
+        message = Message.objects.create(
+            chat_id=chat.id, sender=sender, reciever=reciever, text=text_message
+        )
+        now = timezone.now()
+        chat.last_message = now
+        chat.save()
+
+        return {
+            "text": message.text,
+            "sender_id": sender_id,
+            "sender_username": sender.get_username(),
+            "created_at": now,
+        }
