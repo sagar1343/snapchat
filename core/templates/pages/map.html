@@ -2,11 +2,72 @@
 {% load static %}
 {% block main %}
 <div>
+  <div id="location-container " class="hidden">
+    {% for location in locations %}
+    <div class="friend-location">
+      <p>{{ location.username }}</p>
+      <p>{{ location.latitude }}</p>
+      <p>{{ location.longitude }}</p>
+    </div>
+    {% endfor %}
+  </div>
   <div id="map" style="position: absolute; top: 0; bottom: 64px; width: 100%;"></div>
 </div>
 {% include 'components/bottom-navbar.html' %}
 <script>
-  window.MAPBOX_ACCESS_TOKEN = "{{ mapbox_token|escapejs }}";
+  (function () {
+    window.MAPBOX_ACCESS_TOKEN = "{{ mapbox_token|escapejs }}";
+    const imageMarker = document.createElement("img");
+    imageMarker.src = "{{ request.user.avatar.url }}";
+    imageMarker.style.width = "40px";
+    imageMarker.style.height = "40px";
+
+    imageMarker.style.borderRadius = "100%";
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const map = new mapboxgl.Map({
+          accessToken: window.MAPBOX_ACCESS_TOKEN || "",
+          container: "map",
+          style: "mapbox://styles/mapbox/satellite-streets-v12",
+          projection: "globe",
+          zoom: 1,
+          center: [position.coords.longitude, position.coords.latitude],
+        });
+
+        map.addControl(new mapboxgl.NavigationControl());
+        map.scrollZoom.disable();
+
+        console.log("working");
+
+        new mapboxgl.Marker({ color: "#e63946", element: imageMarker })
+          .setLngLat([position.coords.longitude, position.coords.latitude])
+          .addTo(map);
+
+
+        const locationContainer = document.getElementById("location-container")
+        const result = document.querySelectorAll('.friend-location')
+
+        const formattedlocations = [...result].map((node) => {
+          console.log();
+
+          return { coordinates: [parseFloat(node?.children[2]?.textContent), parseFloat(node?.children[1]?.textContent)] }
+        })
+
+        console.log("formatted", formattedlocations);
+
+        formattedlocations.forEach(location => {
+          new mapboxgl.Marker()
+            .setLngLat(location.coordinates)
+            .addTo(map);
+        });
+
+      },
+      () => {
+        alert("error");
+      },
+    );
+  })()
+
 </script>
-<script src="{% static 'map.js' %}"></script>
 {% endblock %}

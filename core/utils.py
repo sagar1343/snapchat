@@ -1,4 +1,6 @@
-from .models import FriendRequest, Chat
+from typing import List
+
+from .models import FriendRequest, Chat, SnapUser
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -17,7 +19,7 @@ def are_friends(user1, user2):
     )
 
 
-def get_friends(user):
+def get_friends(user) -> List[SnapUser]:
     friend_requests = FriendRequest.objects.filter(
         status=FriendRequest.StatusChoice.ACCEPTED
     ).filter(Q(from_user=user) | Q(to_user=user))

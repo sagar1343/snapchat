@@ -1,4 +1,6 @@
 import base64
+import json
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
@@ -262,12 +264,24 @@ def accept_friend_request(request, id):
 
 @login_required
 def map_view(request):
-    from django.conf import settings
+    friends = get_friends(request.user)
+    locations = []
+    for friend in friends:
+        location = {
+            "username": friend.username,
+            "image": friend.avatar,
+            "latitude": friend.latitude,
+            "longitude": friend.longitude,
+        }
+        locations.append(location)
 
     return render(
         request,
         "pages/map.html",
-        {"mapbox_token": settings.MAPBOX_ACCESS_TOKEN},
+        {
+            "mapbox_token": settings.MAPBOX_ACCESS_TOKEN,
+            "locations": locations,
+        },
     )
 
 
