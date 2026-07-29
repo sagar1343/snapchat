@@ -90,7 +90,9 @@ def home(request):
         chat = get_or_create_chat(request.user, friend)
 
         last_message = chat.messages.order_by("-created_at").first()
-        if last_message.image:
+        if last_message is None:
+            last_message = "say Hii"
+        elif last_message.image:
             last_message = "new snap"
         else:
             last_message = last_message.text
@@ -113,27 +115,44 @@ def chat_details_view(request, id):
         friend = chat.user2
 
     if chat.mode == chat.Mode.ON_CLOSE:
-        recieved_messages = Message.objects.filter(reciever=request.user, sender=friend)
-
-        recieved_messages.delete()
+        Message.objects.filter(
+            chat=chat, reciever=request.user, sender=friend
+        ).delete()
     elif chat.mode == chat.Mode.AFTER_24HR:
         now = timezone.now()
         grace_period = now - timezone.timedelta(days=1)
         messages = messages.filter(created_at__gte=grace_period)
 
-    message_groups = []
-    for message in list(messages):
-        if not message_groups or message_groups[-1]["sender_id"] != message.sender_id:
-            message_groups.append(
-                {"sender_id": message.sender_id, "messages": [message]}
-            )
-        else:
-            message_groups[-1]["messages"].append(message)
-
     return render(
         request,
         "pages/chat-details.html",
-        {"friend": friend, "message_groups": message_groups},
+        {
+            "friend": friend,
+            "messages": messages,
+            "chat_id": id,
+            "chat": chat,
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def chat_settings_view(request, id):
+    chat = get_object_or_404(Chat, pk=id)
+
+    friend = chat.user2 if chat.user1 == request.user else chat.user1
+
+    if request.method == "POST":
+        mode = request.POST.get("mode")
+        if mode in ["keep", "on_close", "after_24_hr"]:
+            chat.mode = mode
+            chat.save()
+            return redirect("chat-details", id=chat.id)
+
+    return render(
+        request,
+        "pages/chat-settings.html",
+        {"chat": chat, "friend": friend},
     )
 
 
@@ -267,5 +286,57 @@ def map_view(request):
 #     return redirect("home")
 
 
+@login_required
 def camera_view(request):
-    return render(request, "pages/camera.html")
+    friends = get_friends(request.user)
+    selected_friend_id = request.GET.get("friend")
+
+    try:
+        selected_friend_id = int(selected_friend_id) if selected_friend_id else None
+    except (TypeError, ValueError):
+        selected_friend_id = None
+
+    return render(
+        request,
+        "pages/camera.html",
+        {"friends": friends, "selected_friend_id": selected_friend_id},
+    )
+
+
+@login_required
+@require_http_methods(["POST"])
+def send_snap_view(request):
+    import base64
+    from django.core.files.base import ContentFile
+
+    image_data = request.POST.get("image_data")
+    friend_ids = request.POST.getlist("friend_ids")
+
+    if not image_data or not friend_ids:
+        return redirect("camera")
+
+    image_text = image_data.split(",")[1]
+    image_bytes = base64.b64decode(image_text)
+
+    last_chat = None
+    for friend_id in friend_ids:
+        friend = get_object_or_404(get_user_model(), pk=friend_id)
+        if not are_friends(request.user, friend):
+            continue
+
+        chat = get_or_create_chat(request.user, friend)
+        # ContentFile turns image bytes into a file Django can save
+        Message.objects.create(
+            chat=chat,
+            sender=request.user,
+            reciever=friend,
+            image=ContentFile(image_bytes, name="snap.jpg"),
+        )
+        chat.last_message = timezone.now()
+        chat.save()
+        update_streak(chat=chat)
+        last_chat = chat
+
+    if last_chat and len(friend_ids) == 1:
+        return redirect("chat-details", id=last_chat.id)
+    return redirect("home")

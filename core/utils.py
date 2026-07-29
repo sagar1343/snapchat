@@ -39,10 +39,11 @@ def get_or_create_chat(user1, user2):
 
 
 def has_user_sent_snap_today(chat, user):
+    today = timezone.now().date()
     return (
-        chat.messages.filter(sender=user, created_at__date=timezone.now())
-        .filter(image="")
-        .filter(image=None)
+        chat.messages.filter(sender=user, created_at__date=today)
+        .exclude(image="")
+        .exclude(image=None)
         .exists()
     )
 
@@ -53,16 +54,21 @@ def is_continous_streak(last_streak_updated_at, now):
 
 def update_streak(chat: Chat):
     now = timezone.now()
-    if chat.streak_updated_at.date() == now.date():
-        return
-
     user1_snap = has_user_sent_snap_today(chat, chat.user1)
     user2_snap = has_user_sent_snap_today(chat, chat.user2)
 
     if user1_snap and user2_snap:
+        if chat.streak_updated_at.date() == now.date() and chat.streak > 0:
+            return
+
         if is_continous_streak(chat.streak_updated_at, now):
             chat.streak += 1
         else:
             chat.streak = 1
         chat.streak_updated_at = now
         chat.save()
+    else:
+        days_passed = (now.date() - chat.streak_updated_at.date()).days
+        if chat.streak > 0 and days_passed > 1:
+            chat.streak = 0
+            chat.save(update_fields=["streak"])

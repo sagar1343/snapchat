@@ -1,110 +1,176 @@
 {% extends 'base.html' %}
 {% block main %}
 {% load humanize %}
-<div class="h-full flex flex-col bg-neutral-50">
+<div class="h-full flex flex-col bg-white">
   <div
-    class="absolute top-0 left-0 right-0 z-20 px-3 py-3 bg-white border-b border-neutral-100 flex items-center gap-2">
+    class="absolute top-0 left-0 right-0 z-20 px-3 py-3 bg-white/95 backdrop-blur-sm border-b border-neutral-100 flex items-center gap-2">
     <a href="{% url 'home' %}"
       class="size-8 flex items-center justify-center rounded-full hover:bg-neutral-100 shrink-0">
       <i class="fa-solid fa-chevron-left text-black"></i>
     </a>
 
-    <div class="flex items-center gap-2.5 flex-1 min-w-0">
+    <a href="{% url 'chat-settings' chat.id %}" class="flex items-center gap-2.5 flex-1 min-w-0">
       {% include 'components/avatar.html' with user=friend size='sm' ring='yes' %}
       <div class="min-w-0">
         <p class="item-title truncate leading-tight">{{ friend.username }}</p>
-        <p class="item-meta">Friends</p>
+        <p class="item-meta">
+          {% if chat.streak %}
+          <span class="text-orange-500 font-semibold">{{ chat.streak }}</span>
+          <i class="fa-solid fa-fire fa-xs" style="color: rgb(241, 99, 47);"></i>
+          {% else %}
+          Tap for settings
+          {% endif %}
+        </p>
       </div>
-    </div>
+    </a>
 
-    <div class="flex items-center gap-1 shrink-0">
-      <button type="button" class="size-8 flex items-center justify-center rounded-full hover:bg-neutral-100">
-        <i class="fa-solid fa-phone text-neutral-500"></i>
-      </button>
-      <button type="button" class="size-8 flex items-center justify-center rounded-full hover:bg-neutral-100">
-        <i class="fa-solid fa-video text-neutral-500"></i>
-      </button>
-    </div>
+    <a href="{% url 'chat-settings' chat.id %}"
+      class="size-8 flex items-center justify-center rounded-full hover:bg-neutral-100 shrink-0">
+      <i class="fa-solid fa-gear text-neutral-500"></i>
+    </a>
   </div>
 
-  <main class="absolute left-0 right-0 top-[64px] bottom-[76px] overflow-y-auto px-3 py-3">
-    {% if message_groups %}
-    <div class="min-h-full flex flex-col justify-end gap-3">
-      {% for group in message_groups %}
-      {% with first_msg=group.messages|first %}
-      <div class="flex flex-col max-w-[75%]">
-        {% if first_msg.sender_id == request.user.id %}
-        <p class="text-[10px] font-semibold text-red-500 mb-1">Me</p>
+  <main id="chat-feed" class="absolute left-0 right-0 top-[64px] bottom-[76px] overflow-y-auto px-3 py-3 bg-[#f7f7f8]">
+    {% if messages %}
+    <div id="chat-messages" class="min-h-full flex flex-col justify-end gap-3">
+      {% for message in messages %}
+      <div class="flex flex-col max-w-[78%]">
+        {% if message.sender_id == request.user.id %}
+        <p class="text-[10px] font-bold text-red-500 mb-1 tracking-wide">ME</p>
         {% else %}
-        <p class="text-[10px] font-semibold text-[#00B8FF] mb-1">{{ first_msg.sender.username }}</p>
+        <p class="text-[10px] font-bold text-[#00B8FF] mb-1 tracking-wide">{{ message.sender.username|upper }}</p>
         {% endif %}
 
-        {% for message in group.messages %}
         {% if message.image %}
-        <div class="flex gap-1.5 items-stretch">
+        <div class="flex gap-1.5 items-stretch my-1">
           <div
-            class="w-[2px] shrink-0 {% if first_msg.sender_id == request.user.id %}bg-red-500{% else %}bg-[#00B8FF]{% endif %}">
+            class="w-[3px] rounded-full shrink-0 {% if message.sender_id == request.user.id %}bg-red-500{% else %}bg-[#00B8FF]{% endif %}">
           </div>
-          <a href="{{ message.image.url }}" target="_blank" class="block my-1">
-            <img src="{{ message.image.url }}" alt="snap" class="max-w-[180px] max-h-[240px] rounded-lg object-cover">
+          <a href="{{ message.image.url }}" target="_blank" class="block relative">
+            <img src="{{ message.image.url }}" alt="snap"
+              class="w-[160px] h-[220px] rounded-2xl object-cover border border-black/5 shadow-sm">
+            <span
+              class="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/55 text-white text-[10px] font-semibold backdrop-blur-sm">
+              Snap
+            </span>
           </a>
         </div>
         {% endif %}
+
         {% if message.text %}
         <div class="flex gap-1.5 items-stretch">
           <div
-            class="w-[2px] shrink-0 {% if first_msg.sender_id == request.user.id %}bg-red-500{% else %}bg-[#00B8FF]{% endif %}">
+            class="w-[3px] rounded-full shrink-0 {% if message.sender_id == request.user.id %}bg-red-500{% else %}bg-[#00B8FF]{% endif %}">
           </div>
-          <p class="py-0.5 text-xs font-medium text-black break-all min-w-0">{{ message.text }}</p>
+          <p class="py-0.5 text-sm font-medium text-black break-all min-w-0">{{ message.text }}</p>
         </div>
         {% endif %}
-        {% endfor %}
 
-        {% with last_msg=group.messages|last %}
-        <span class="item-meta pl-2.5 mt-0.5">{{ last_msg.created_at|timesince }} ago</span>
-        {% endwith %}
+        <span class="item-meta pl-3 mt-0.5">{{ message.created_at|timesince }} ago</span>
       </div>
-      {% endwith %}
       {% endfor %}
     </div>
     {% else %}
-    <div class="h-full flex flex-col items-center justify-center text-center px-8">
+    <div id="empty-chat" class="h-full flex flex-col items-center justify-center text-center px-8">
       <div class="mb-4">
         {% include 'components/avatar.html' with user=friend size='xl' ring='yes' %}
       </div>
       <p class="item-title">Say hi to {{ friend.username }}</p>
-      <p class="item-meta mt-1">Send a chat to get started</p>
+      <p class="item-meta mt-1">Send a chat or a snap to start</p>
     </div>
+    <div id="chat-messages" class="flex flex-col gap-3"></div>
     {% endif %}
   </main>
 
-  <div id="preview-dock"
-    class="dock bg-base-200  absolute gap-2 px-4 justify-start bottom-[72px] shadow-xs dock-lg hidden">
-
-    <div class="flex flex-row justify-start gap-4 max-w-full">
-      <div id="preview-container" class="w-12 h-12 rounded-md overflow-hidden">
-      </div>
-      <div class="grow flex justify-between flex-row">
-        <p id="caption" class="max-w-[20ch] truncate text-xs font-light">Click the button to watch on Jetflix app.
-        </p>
-        <i class="fa-solid fa-xmark"></i>
-      </div>
+  <div class="absolute left-0 right-0 bottom-0 z-20 px-3 pb-3 pt-2 bg-white border-t border-neutral-100">
+    <div class="flex items-center gap-2">
+      <a href="{% url 'camera' %}?friend={{ friend.id }}"
+        class="size-11 rounded-full bg-black text-white flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-camera"></i>
+      </a>
+      <form id="chat-form" class="flex-1 flex items-center gap-2 min-w-0">
+        <input id="message-input" name="message" type="text"
+          class="flex-1 h-11 rounded-full bg-neutral-100 border-0 px-4 text-sm outline-none focus:ring-2 focus:ring-neutral-300"
+          placeholder="Send a chat" autocomplete="off">
+        <button type="submit"
+          class="size-11 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-arrow-up"></i>
+        </button>
+      </form>
     </div>
   </div>
-
-  <div class="dock absolute gap-2 px-4 justify-start bottom-0 shadow-xs dock-lg">
-    <button id="file-button" type="button" class="max-w-10 rounded-full btn btn-square text-white bg-black">
-      <i class="fa-solid fa-camera"></i>
-    </button>
-    <form action="{% url 'send-message' friend.id %}" method="post" enctype="multipart/form-data"
-      class="max-w-full flex flex-row gap-4">
-      {% csrf_token %}
-      <input id="snap-file" name="image" type="file" accept="image/*" class="hidden">
-      <input name="message" type="text" class="rounded-full input input-border" placeholder="Send chat">
-      <button type="submit" class="rounded-full btn btn-square text-white bg-blue-500">
-        <i class="fa-solid fa-arrow-up"></i>
-      </button>
-    </form>
-  </div>
 </div>
+<script>
+  (function () {
+    const chatID = "{{ chat_id }}"
+    const socket = new WebSocket(`ws://${window.location.host}/ws/chat/${chatID}/`)
+    const form = document.getElementById("chat-form")
+    const feed = document.getElementById("chat-feed")
+    const messagesBox = document.getElementById("chat-messages")
+    const emptyChat = document.getElementById("empty-chat")
+    const input = document.getElementById("message-input")
+    const messageUserId = Number("{{ request.user.id }}")
+
+    function scrollToBottom() {
+      feed.scrollTop = feed.scrollHeight
+    }
+
+    function appendMessage(data) {
+      if (emptyChat) {
+        emptyChat.style.display = "none"
+      }
+
+      const wrap = document.createElement("div")
+      wrap.className = "flex flex-col max-w-[78%]"
+
+      const sender = document.createElement("p")
+      sender.className = "text-[10px] font-bold mb-1 tracking-wide"
+
+      const row = document.createElement("div")
+      row.className = "flex gap-1.5 items-stretch"
+
+      const bar = document.createElement("div")
+      bar.className = "w-[3px] rounded-full shrink-0"
+
+      const text = document.createElement("p")
+      text.className = "py-0.5 text-sm font-medium text-black break-all min-w-0"
+      text.textContent = data.message
+
+      if (Number(data.sender_id) == messageUserId) {
+        sender.classList.add("text-red-500")
+        sender.textContent = "ME"
+        bar.classList.add("bg-red-500")
+      } else {
+        sender.classList.add("text-[#00B8FF]")
+        sender.textContent = data.sender_username.toUpperCase()
+        bar.classList.add("bg-[#00B8FF]")
+      }
+
+      row.appendChild(bar)
+      row.appendChild(text)
+      wrap.appendChild(sender)
+      wrap.appendChild(row)
+      messagesBox.appendChild(wrap)
+      scrollToBottom()
+    }
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+      appendMessage(data)
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault()
+      const value = input.value.trim()
+      if (!value || socket.readyState !== WebSocket.OPEN) {
+        return
+      }
+
+      socket.send(JSON.stringify({ message: value }))
+      input.value = ""
+    })
+
+    scrollToBottom()
+  }())
+</script>
 {% endblock %}

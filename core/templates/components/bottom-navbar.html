@@ -11,8 +11,9 @@
     <span class="dock-label">Chat</span>
   </a>
 
-  <a href="{% url 'camera' %}" type="button">
-    <i class="fa-solid fa-camera"></i>
+  <a href="{% url 'camera' %}"
+    class="{% if request.resolver_match.url_name == 'camera' %}dock-active text-black{% endif %}">
+    <i class="fa-solid fa-camera {% if request.resolver_match.url_name == 'camera' %}text-[#FFFC00]{% endif %}"></i>
     <span class="dock-label">Camera</span>
   </a>
 
