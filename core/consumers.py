@@ -36,20 +36,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
         user = self.scope["user"]
         payload = json.loads(text_data)
         text = payload.get("message")
-        if not text:
-            return
 
-        saved = await self._save_message(self.chat_id, user.id, text)
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
-                "type": "chat_message",
-                "message": saved["text"],
-                "sender_id": saved["sender_id"],
-                "sender_username": saved["sender_username"],
-                "created_at": saved["created_at"],
-            },
-        )
+        if payload.get("screenshot"):
+            saved = await self._save_screenshot_message(self.chat_id, user.id)
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "ss_message",
+                    "message": saved["text"],
+                    "sender_id": saved["sender_id"],
+                    "sender_username": saved["sender_username"],
+                    "created_at": saved["created_at"],
+                },
+            )
+        else:
+            if not text:
+                return
+            saved = await self._save_message(self.chat_id, user.id, text)
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "chat_message",
+                    "message": saved["text"],
+                    "sender_id": saved["sender_id"],
+                    "sender_username": saved["sender_username"],
+                    "created_at": saved["created_at"],
+                },
+            )
 
     async def chat_message(self, event):
         await self.send(
@@ -57,6 +70,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     "message": event["message"],
                     "sender_id": event["sender_id"],
+                    "is_system": False,
+                    "sender_username": event["sender_username"],
+                    "created_at": event["created_at"],
+                }
+            )
+        )
+
+    async def ss_message(self, event):
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "message": event["message"],
+                    "sender_id": event["sender_id"],
+                    "is_system": True,
                     "sender_username": event["sender_username"],
                     "created_at": event["created_at"],
                 }
@@ -81,6 +108,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         message = Message.objects.create(
             chat_id=chat.id, sender=sender, reciever=reciever, text=text_message
+        )
+        now = timezone.now()
+        chat.last_message = now
+        chat.save(update_fields=["last_message"])
+
+        return {
+            "text": message.text,
+            "sender_id": sender_id,
+            "sender_username": sender.get_username(),
+            "created_at": now.isoformat(),
+        }
+
+    @database_sync_to_async
+    def _save_screenshot_message(self, chat_id, sender_id):
+        sender = get_object_or_404(get_user_model(), pk=sender_id)
+        chat = Chat.objects.get(pk=chat_id)
+        reciever = chat.user2
+        if sender.id == chat.user2.id:
+            reciever = chat.user1
+
+        message = Message.objects.create(
+            chat_id=chat.id,
+            sender=sender,
+            reciever=reciever,
+            is_system=True,
+            text=f"{sender.get_username()} took a screenshot of chat",
         )
         now = timezone.now()
         chat.last_message = now

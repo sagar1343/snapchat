@@ -30,10 +30,19 @@
     </a>
   </div>
 
-  <main id="chat-feed" class="absolute left-0 right-0 top-[64px] bottom-[76px] overflow-y-auto px-3 py-3 bg-[#f7f7f8]">
+  <main id="chat-feed" class="absolute left-0 right-0 top-[64px] bottom-[76px] overflow-y-auto px-3 py-3">
     {% if messages %}
     <div id="chat-messages" class="min-h-full flex flex-col justify-end gap-3">
       {% for message in messages %}
+      {% if message.is_system %}
+      <div class="uppercase text-center my-1 text-[10px] text-neutral-500 font-bold">
+        {% if request.user == message.sender %}
+        You took a screenshot of a chat
+        {% else %}
+        {{ message.text }}
+        {% endif %}
+      </div>
+      {% else %}
       <div class="flex flex-col max-w-[78%]">
         {% if message.sender_id == request.user.id %}
         <p class="text-[10px] font-bold text-red-500 mb-1 tracking-wide">ME</p>
@@ -68,6 +77,7 @@
 
         <span class="item-meta pl-3 mt-0.5">{{ message.created_at|timesince }} ago</span>
       </div>
+      {% endif %}
       {% endfor %}
     </div>
     {% else %}
@@ -118,6 +128,19 @@
     function appendMessage(data) {
       if (emptyChat) {
         emptyChat.style.display = "none"
+      }
+
+      if (data.is_system) {
+        const div = document.createElement('div')
+        div.className = "uppercase text-center text-[10px] text-neutral-500 font-bold"
+        if (messageUserId === data.sender_id) {
+          div.innerText = "You took a screenshot of chat"
+        } else {
+          div.innerText = data.message
+        }
+        messagesBox.appendChild(div)
+        scrollToBottom()
+        return
       }
 
       const wrap = document.createElement("div")
@@ -171,6 +194,16 @@
     })
 
     scrollToBottom()
+
+    function notifyscreenshot() {
+      socket.send(JSON.stringify({ "screenshot": true }))
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey && e.shiftKey) || (e.key == "PrintScreen")) {
+        notifyscreenshot()
+      }
+    })
   }())
 </script>
 {% endblock %}

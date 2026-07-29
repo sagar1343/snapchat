@@ -1,3 +1,5 @@
+import base64
+from django.core.files.base import ContentFile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import login, logout, get_user_model
@@ -5,8 +7,6 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.db import IntegrityError
 from django.utils import timezone
-from rest_framework.decorators import api_view
-from django.views.decorators.csrf import csrf_exempt
 from .utils import are_friends, get_friends, get_or_create_chat, update_streak
 from .models import FriendRequest, Message, Chat
 from . import forms
@@ -115,9 +115,7 @@ def chat_details_view(request, id):
         friend = chat.user2
 
     if chat.mode == chat.Mode.ON_CLOSE:
-        Message.objects.filter(
-            chat=chat, reciever=request.user, sender=friend
-        ).delete()
+        Message.objects.filter(chat=chat, reciever=request.user, sender=friend).delete()
     elif chat.mode == chat.Mode.AFTER_24HR:
         now = timezone.now()
         grace_period = now - timezone.timedelta(days=1)
@@ -306,9 +304,6 @@ def camera_view(request):
 @login_required
 @require_http_methods(["POST"])
 def send_snap_view(request):
-    import base64
-    from django.core.files.base import ContentFile
-
     image_data = request.POST.get("image_data")
     friend_ids = request.POST.getlist("friend_ids")
 
